@@ -7,10 +7,13 @@ import {
   OrderItemDto,
   OrderItemStatus,
   ItemPriority,
+  WhatsAppMessageType,
   ORDER_ITEM_STATUS_LABELS,
   PRIORITY_LABELS,
   getAllowedTransitions,
 } from '@pharmacy/shared';
+import { WhatsAppComposerModal } from '../components/common/WhatsAppComposerModal';
+import { WhatsAppHistoryModal } from '../components/common/WhatsAppHistoryModal';
 import {
   Search,
   Filter,
@@ -24,6 +27,7 @@ import {
   FileCheck2,
   Calendar,
   AlertCircle,
+  MessageSquare,
 } from 'lucide-react';
 
 export const RequestsListPage: React.FC = () => {
@@ -51,6 +55,21 @@ export const RequestsListPage: React.FC = () => {
   const [isPerformerModalOpen, setIsPerformerModalOpen] = useState<boolean>(false);
   const [isSubmittingStatus, setIsSubmittingStatus] = useState<boolean>(false);
   const [statusActionError, setStatusActionError] = useState<string | null>(null);
+
+  // WhatsApp Modals State
+  const [whatsAppComposerItem, setWhatsAppComposerItem] = useState<{
+    item: OrderItemDto;
+    messageType: WhatsAppMessageType;
+  } | null>(null);
+  const [whatsAppHistoryItem, setWhatsAppHistoryItem] = useState<OrderItemDto | null>(null);
+
+  const handleOpenWhatsAppModal = (item: OrderItemDto, messageType: WhatsAppMessageType) => {
+    setWhatsAppComposerItem({ item, messageType });
+  };
+
+  const handleOpenWhatsAppHistory = (item: OrderItemDto) => {
+    setWhatsAppHistoryItem(item);
+  };
 
   const fetchItems = async (page = pagination.page) => {
     setIsLoading(true);
@@ -338,6 +357,30 @@ export const RequestsListPage: React.FC = () => {
                     {/* Actions */}
                     <td className="px-4 py-3.5 text-center">
                       <div className="flex items-center justify-center gap-1.5">
+                        {/* Event A: WhatsApp Product Ordered notification */}
+                        {item.status === OrderItemStatus.ORDERED && (
+                          <button
+                            onClick={() => handleOpenWhatsAppModal(item, WhatsAppMessageType.PRODUCT_ORDERED)}
+                            className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-xs"
+                            title="إرسال إشعار للعميل بأن الصنف تم طلبه عبر واتساب"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>إبلاغ بالطلب</span>
+                          </button>
+                        )}
+
+                        {/* Event B: WhatsApp Product Arrived notification */}
+                        {(item.status === OrderItemStatus.RECEIVED || item.status === OrderItemStatus.CUSTOMER_NOTIFIED) && (
+                          <button
+                            onClick={() => handleOpenWhatsAppModal(item, WhatsAppMessageType.PRODUCT_ARRIVED)}
+                            className="px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-xs"
+                            title="إرسال إشعار للعميل بوصول الصنف عبر واتساب"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
+                            <span>إبلاغ بالوصول</span>
+                          </button>
+                        )}
+
                         {/* Change Status Button */}
                         {getAllowedTransitions(item.status).length > 0 && (
                           <button
@@ -348,6 +391,15 @@ export const RequestsListPage: React.FC = () => {
                             تحديث الحالة
                           </button>
                         )}
+
+                        {/* WhatsApp Message History */}
+                        <button
+                          onClick={() => handleOpenWhatsAppHistory(item)}
+                          className="p-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-lg transition-colors"
+                          title="عرض سجل رسائل وتنبيهات WhatsApp للعميل"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </button>
 
                         {/* View History Timeline */}
                         <button
@@ -579,6 +631,33 @@ export const RequestsListPage: React.FC = () => {
         onCancel={() => setIsPerformerModalOpen(false)}
         isSubmitting={isSubmittingStatus}
       />
+
+      {/* WhatsApp Message Composer Modal */}
+      {whatsAppComposerItem && (
+        <WhatsAppComposerModal
+          isOpen={Boolean(whatsAppComposerItem)}
+          customerId={whatsAppComposerItem.item.order?.customer?.id || ''}
+          orderItemId={whatsAppComposerItem.item.id}
+          orderId={whatsAppComposerItem.item.orderId}
+          initialMessageType={whatsAppComposerItem.messageType}
+          onClose={() => setWhatsAppComposerItem(null)}
+          onSuccess={() => {
+            fetchItems();
+          }}
+        />
+      )}
+
+      {/* WhatsApp Message History Modal */}
+      {whatsAppHistoryItem && (
+        <WhatsAppHistoryModal
+          isOpen={Boolean(whatsAppHistoryItem)}
+          customerId={whatsAppHistoryItem.order?.customer?.id}
+          orderItemId={whatsAppHistoryItem.id}
+          customerName={whatsAppHistoryItem.order?.customer?.name || undefined}
+          customerPhone={whatsAppHistoryItem.order?.customer?.phone || undefined}
+          onClose={() => setWhatsAppHistoryItem(null)}
+        />
+      )}
     </div>
   );
 };

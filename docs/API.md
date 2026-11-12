@@ -51,10 +51,25 @@
 - `PATCH /api/employees/:id`: Edit employee details, toggle active state, update role, or reset PIN.
 - `GET /api/activity-logs`: Append-only audit log query with pagination and filters.
 
-## 7. Socket.IO Real-Time Events
+## 7. WhatsApp Customer Communication (Meta Cloud API)
+
+- `POST /api/whatsapp/messages/preview`: Generate preview of notification message according to notification event (`PRODUCT_ORDERED` or `PRODUCT_ARRIVED`). Returns customer 24-hr window status, consent status, and default interpolated message text.
+- `POST /api/whatsapp/messages/send`: Send official WhatsApp message to customer. Enforces customer consent, 24-hr messaging window policy, template parameters, and performer PIN attribution.
+- `GET /api/whatsapp/messages`: List WhatsApp message history with filtering (`customerId`, `orderItemId`, `status`).
+- `GET /api/whatsapp/messages/:id`: Detailed view of a specific message record.
+- `GET /api/whatsapp/customer-window/:customerId`: Get customer's 24-hour service window status and consent.
+- `PATCH /api/whatsapp/customer/:customerId/consent`: Record or revoke customer WhatsApp consent with performer attribution.
+- `PATCH /api/whatsapp/customer/:customerId/address`: Update customer home delivery address and notes with performer attribution.
+- `GET /api/whatsapp/webhook`: Public Meta webhook verification handshake (`hub.challenge`).
+- `POST /api/whatsapp/webhook`: Public Meta webhook event receiver for delivery receipts (`sent`, `delivered`, `read`, `failed`) and inbound customer messages.
+
+## 8. Socket.IO Real-Time Events
 
 - `order:created`: Triggered when an order is created.
 - `orderItem:statusChanged`: Triggered when an order item status updates.
 - `purchaseBatch:created`: Triggered when a new purchasing batch is created.
 - `purchaseBatch:updated`: Triggered when a batch status changes.
 - `stats:updated`: Emitted to inform clients to refresh statistical cards.
+- `whatsapp:messageCreated`: Triggered when a new WhatsApp message is logged or sent.
+- `whatsapp:statusChanged`: Triggered when Meta webhook reports message delivery or read receipts.
+- `whatsapp:customerMessaged`: Triggered when customer replies to the pharmacy on WhatsApp (opening the 24-hr window).

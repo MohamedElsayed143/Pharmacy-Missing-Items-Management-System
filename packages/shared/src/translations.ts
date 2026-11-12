@@ -4,6 +4,8 @@ import {
   OrderItemStatus,
   OrderOverallStatus,
   PurchaseBatchStatus,
+  WhatsAppMessageType,
+  WhatsAppMessageStatus,
 } from './enums';
 
 export const ROLE_LABELS: Record<UserRole, string> = {
@@ -112,4 +114,62 @@ export const ORDER_OVERALL_STATUS_LABELS: Record<OrderOverallStatus, string> = {
   [OrderOverallStatus.IN_PROGRESS]: 'قيد المعالجة والتوريد',
   [OrderOverallStatus.COMPLETED]: 'مكتمل',
   [OrderOverallStatus.CANCELLED]: 'ملغي',
+};
+
+export const WHATSAPP_MESSAGE_TYPE_LABELS: Record<WhatsAppMessageType, string> = {
+  [WhatsAppMessageType.PRODUCT_ORDERED]: 'إشعار بطلب الصنف من المورد',
+  [WhatsAppMessageType.PRODUCT_ARRIVED]: 'إشعار بوصول الصنف للصيدلية',
+  [WhatsAppMessageType.ADDRESS_CONFIRMATION]: 'تأكيد عنوان التوصيل',
+  [WhatsAppMessageType.CUSTOM]: 'رسالة مخصصة',
+};
+
+export const WHATSAPP_MESSAGE_STATUS_LABELS: Record<WhatsAppMessageStatus, string> = {
+  [WhatsAppMessageStatus.DRAFT]: 'مسودة (محاكاة)',
+  [WhatsAppMessageStatus.PENDING]: 'قيد الإرسال',
+  [WhatsAppMessageStatus.SENT]: 'تم القبول لدى Meta',
+  [WhatsAppMessageStatus.DELIVERED]: 'تم التسليم لهاتف العميل',
+  [WhatsAppMessageStatus.READ]: 'تمت القراءة من العميل',
+  [WhatsAppMessageStatus.FAILED]: 'فشل الإرسال',
+  [WhatsAppMessageStatus.CANCELLED]: 'ملغي',
+};
+
+export const WHATSAPP_MESSAGE_STATUS_COLORS: Record<
+  WhatsAppMessageStatus,
+  { bg: string; text: string; border: string }
+> = {
+  [WhatsAppMessageStatus.DRAFT]: {
+    bg: 'bg-slate-100',
+    text: 'text-slate-700',
+    border: 'border-slate-300',
+  },
+  [WhatsAppMessageStatus.PENDING]: {
+    bg: 'bg-amber-50',
+    text: 'text-amber-700',
+    border: 'border-amber-300',
+  },
+  [WhatsAppMessageStatus.SENT]: {
+    bg: 'bg-blue-50',
+    text: 'text-blue-700',
+    border: 'border-blue-300',
+  },
+  [WhatsAppMessageStatus.DELIVERED]: {
+    bg: 'bg-teal-50',
+    text: 'text-teal-700',
+    border: 'border-teal-300',
+  },
+  [WhatsAppMessageStatus.READ]: {
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-700',
+    border: 'border-emerald-300',
+  },
+  [WhatsAppMessageStatus.FAILED]: {
+    bg: 'bg-rose-50',
+    text: 'text-rose-700',
+    border: 'border-rose-300',
+  },
+  [WhatsAppMessageStatus.CANCELLED]: {
+    bg: 'bg-slate-100',
+    text: 'text-slate-500',
+    border: 'border-slate-200',
+  },
 };

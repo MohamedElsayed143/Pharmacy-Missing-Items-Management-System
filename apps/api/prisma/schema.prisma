@@ -46,6 +46,23 @@ enum BatchStatus {
   CANCELLED
 }
 
+enum WhatsAppMessageType {
+  PRODUCT_ORDERED
+  PRODUCT_ARRIVED
+  ADDRESS_CONFIRMATION
+  CUSTOM
+}
+
+enum WhatsAppMessageStatus {
+  DRAFT
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  CANCELLED
+}
+
 model Employee {
   id           String   @id @default(uuid())
   fullName     String
@@ -57,25 +74,37 @@ model Employee {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  createdOrders            Order[]                 @relation("OrderCreatedBy")
-  createdBatches           PurchaseBatch[]         @relation("BatchCreatedBy")
+  createdOrders            Order[]                  @relation("OrderCreatedBy")
+  createdBatches           PurchaseBatch[]          @relation("BatchCreatedBy")
   authHistories            OrderItemStatusHistory[] @relation("HistoryAuthUser")
   performerHistories       OrderItemStatusHistory[] @relation("HistoryPerformer")
-  authActivityLogs         ActivityLog[]           @relation("ActivityAuthUser")
-  performerActivityLogs    ActivityLog[]           @relation("ActivityPerformer")
+  authActivityLogs         ActivityLog[]            @relation("ActivityAuthUser")
+  performerActivityLogs    ActivityLog[]            @relation("ActivityPerformer")
+  sentWhatsAppMessages     WhatsAppMessage[]        @relation("WhatsAppSentBy")
+  authWhatsAppMessages     WhatsAppMessage[]        @relation("WhatsAppAuthUser")
 
   @@index([username])
 }
 
 model Customer {
-  id           String   @id @default(uuid())
-  phone        String
-  customerCode String?
-  name         String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                          String    @id @default(uuid())
+  phone                       String
+  customerCode                String?
+  name                        String?
+  address                     String?
+  addressDetails              String?
+  area                        String?
+  deliveryNotes               String?
+  whatsappConsent             Boolean   @default(false)
+  whatsappConsentTimestamp    DateTime?
+  whatsappConsentSource       String?
+  whatsappConsentRecordedById String?
+  lastCustomerMessageAt       DateTime?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
 
-  orders Order[]
+  orders           Order[]
+  whatsappMessages WhatsAppMessage[]
 
   @@index([phone])
 }
@@ -107,7 +136,8 @@ model Order {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  items OrderItem[]
+  items            OrderItem[]
+  whatsappMessages WhatsAppMessage[]
 
   @@index([requestNumber])
   @@index([customerId])
@@ -133,6 +163,7 @@ model OrderItem {
 
   history            OrderItemStatusHistory[]
   purchaseBatchItems PurchaseBatchItem[]
+  whatsappMessages   WhatsAppMessage[]
 
   @@index([orderId])
   @@index([productId])
@@ -206,5 +237,41 @@ model ActivityLog {
 
   @@index([entityType, entityId])
   @@index([action])
+  @@index([createdAt])
+}
+
+model WhatsAppMessage {
+  id                  String                @id @default(uuid())
+  customerId          String
+  customer            Customer              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  orderId             String?
+  order               Order?                @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  orderItemId         String?
+  orderItem           OrderItem?            @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
+  messageType         WhatsAppMessageType   @default(CUSTOM)
+  messageBody         String
+  templateName        String?
+  templateLanguage    String?               @default("ar")
+  templateComponents  Json?
+  providerMessageId   String?
+  recipientPhone      String
+  status              WhatsAppMessageStatus @default(PENDING)
+  failureReason       String?
+  sentByEmployeeId    String
+  sentByEmployee      Employee              @relation("WhatsAppSentBy", fields: [sentByEmployeeId], references: [id])
+  authenticatedUserId String
+  authenticatedUser   Employee              @relation("WhatsAppAuthUser", fields: [authenticatedUserId], references: [id])
+  deliveryPreference  String?
+  isSimulated         Boolean               @default(false)
+  createdAt           DateTime              @default(now())
+  sentAt              DateTime?
+  deliveredAt         DateTime?
+  readAt              DateTime?
+  failedAt            DateTime?
+
+  @@index([customerId])
+  @@index([orderItemId])
+  @@index([providerMessageId])
+  @@index([status])
   @@index([createdAt])
 }

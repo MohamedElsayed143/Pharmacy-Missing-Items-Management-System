@@ -4,6 +4,8 @@ import {
   OrderItemStatus,
   OrderOverallStatus,
   PurchaseBatchStatus,
+  WhatsAppMessageType,
+  WhatsAppMessageStatus,
 } from './enums';
 
 export interface PerformerAttributionDto {
@@ -43,6 +45,14 @@ export interface CustomerDto {
   phone: string;
   customerCode?: string | null;
   name?: string | null;
+  address?: string | null;
+  addressDetails?: string | null;
+  area?: string | null;
+  deliveryNotes?: string | null;
+  whatsappConsent?: boolean;
+  whatsappConsentTimestamp?: string | null;
+  whatsappConsentSource?: string | null;
+  lastCustomerMessageAt?: string | null;
   createdAt: string;
 }
 
@@ -241,4 +251,78 @@ export interface DashboardStatsDto {
   readyForPickup: number;
   completedDeliveries: number;
   recentOrdersCount: number;
+}
+
+export interface WhatsAppMessageDto {
+  id: string;
+  customerId: string;
+  customer?: CustomerDto;
+  orderId?: string | null;
+  orderItemId?: string | null;
+  messageType: WhatsAppMessageType;
+  messageBody: string;
+  templateName?: string | null;
+  templateLanguage?: string | null;
+  templateComponents?: any;
+  providerMessageId?: string | null;
+  recipientPhone: string;
+  status: WhatsAppMessageStatus;
+  failureReason?: string | null;
+  sentByEmployeeId: string;
+  sentByEmployee?: { fullName: string; role: UserRole };
+  authenticatedUserId: string;
+  deliveryPreference?: string | null;
+  isSimulated: boolean;
+  createdAt: string;
+  sentAt?: string | null;
+  deliveredAt?: string | null;
+  readAt?: string | null;
+  failedAt?: string | null;
+}
+
+export interface WhatsAppPreviewDto {
+  isInside24HourWindow: boolean;
+  customerHasConsent: boolean;
+  recipientPhone: string;
+  formattedPhone: string;
+  customer: CustomerDto;
+  orderItem?: {
+    id: string;
+    productNameCustom: string;
+    requestedQuantity: number;
+    status: OrderItemStatus;
+    notes?: string | null;
+  } | null;
+  defaultMessageBody: string;
+  supportedTemplates: {
+    name: string;
+    description: string;
+    bodyText: string;
+    variables: string[];
+  }[];
+  isSimulatedMode: boolean;
+}
+
+export interface SendWhatsAppMessageDto extends PerformerAttributionDto {
+  customerId: string;
+  orderItemId?: string;
+  orderId?: string;
+  messageType: WhatsAppMessageType;
+  messageBody: string;
+  templateName?: string;
+  deliveryPreference?: 'HOME_DELIVERY' | 'STORE_PICKUP';
+}
+
+export interface UpdateCustomerConsentDto extends PerformerAttributionDto {
+  customerId: string;
+  consent: boolean;
+  source?: string;
+}
+
+export interface UpdateCustomerAddressDto extends PerformerAttributionDto {
+  customerId: string;
+  address: string;
+  addressDetails?: string;
+  area?: string;
+  deliveryNotes?: string;
 }

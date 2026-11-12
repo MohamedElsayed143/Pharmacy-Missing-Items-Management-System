@@ -183,10 +183,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
               </h3>
             </div>
             <button
-              onClick={() => onNavigate('purchasing')}
+              onClick={() => onNavigate('requests')}
               className="text-xs font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1"
             >
-              <span>عرض التجميع</span>
+              <span>عرض قائمة الطلبات</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>

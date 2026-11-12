@@ -37,6 +37,23 @@ export enum PurchaseBatchStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum WhatsAppMessageType {
+  PRODUCT_ORDERED = 'PRODUCT_ORDERED',
+  PRODUCT_ARRIVED = 'PRODUCT_ARRIVED',
+  ADDRESS_CONFIRMATION = 'ADDRESS_CONFIRMATION',
+  CUSTOM = 'CUSTOM',
+}
+
+export enum WhatsAppMessageStatus {
+  DRAFT = 'DRAFT',
+  PENDING = 'PENDING',
+  SENT = 'SENT',
+  DELIVERED = 'DELIVERED',
+  READ = 'READ',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
+}
+
 export enum DosageForm {
   TABLETS = 'أقراص (Tablets)',
   CAPSULES = 'كبسولات (Capsules)',

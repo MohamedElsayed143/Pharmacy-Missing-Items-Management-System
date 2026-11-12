@@ -4,6 +4,7 @@ export const ALLOWED_STATUS_TRANSITIONS: Record<OrderItemStatus, OrderItemStatus
   [OrderItemStatus.NEW]: [
     OrderItemStatus.REVIEWED,
     OrderItemStatus.ADDED_TO_PURCHASE,
+    OrderItemStatus.ORDERED,
     OrderItemStatus.CANCELLED,
   ],
   [OrderItemStatus.REVIEWED]: [

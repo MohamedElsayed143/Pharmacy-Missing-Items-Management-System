@@ -16,7 +16,6 @@ export type TabType =
   | 'dashboard'
   | 'create-request'
   | 'requests'
-  | 'purchasing'
   | 'receiving'
   | 'employees'
   | 'activity';
@@ -29,7 +28,6 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === UserRole.ADMIN;
-  const isPurchasingOrAdmin = user?.role === UserRole.ADMIN || user?.role === UserRole.PURCHASING_MANAGER;
 
   const navItems: { id: TabType; label: string; icon: any; show: boolean; badge?: string }[] = [
     {
@@ -50,12 +48,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onSelectTab }) => {
       label: 'قائمة الطلبات والأصناف',
       icon: FileSpreadsheet,
       show: true,
-    },
-    {
-      id: 'purchasing',
-      label: 'إدارة الشراء والتجميع',
-      icon: ShoppingCart,
-      show: isPurchasingOrAdmin,
     },
     {
       id: 'receiving',

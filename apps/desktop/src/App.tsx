@@ -6,7 +6,6 @@ import { Sidebar, TabType } from './components/common/Sidebar';
 import { DashboardPage } from './pages/DashboardPage';
 import { CreateRequestPage } from './pages/CreateRequestPage';
 import { RequestsListPage } from './pages/RequestsListPage';
-import { PurchasingPage } from './pages/PurchasingPage';
 import { ReceivingPage } from './pages/ReceivingPage';
 import { EmployeesPage } from './pages/EmployeesPage';
 import { ActivityLogPage } from './pages/ActivityLogPage';
@@ -59,7 +58,6 @@ export const App: React.FC = () => {
             <CreateRequestPage onCreated={() => setActiveTab('requests')} />
           )}
           {activeTab === 'requests' && <RequestsListPage />}
-          {activeTab === 'purchasing' && <PurchasingPage />}
           {activeTab === 'receiving' && <ReceivingPage />}
           {activeTab === 'employees' && <EmployeesPage />}
           {activeTab === 'activity' && <ActivityLogPage />}

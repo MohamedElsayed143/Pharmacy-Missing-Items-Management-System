@@ -14,6 +14,7 @@ import receivingRouter from './modules/receiving/receiving.router';
 import dashboardRouter from './modules/dashboard/dashboard.router';
 import employeesRouter from './modules/employees/employees.router';
 import activityRouter from './modules/activity/activity.router';
+import whatsappRouter from './modules/whatsapp/whatsapp.router';
 
 const app = express();
 const server = http.createServer(app);
@@ -28,7 +29,13 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req: any, res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 
 // Health Check
 app.get('/api/health', (req, res) => {
@@ -47,6 +54,7 @@ app.use('/api/receiving', receivingRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/employees', employeesRouter);
 app.use('/api/activity-logs', activityRouter);
+app.use('/api/whatsapp', whatsappRouter);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
