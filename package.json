@@ -1,0 +1,28 @@
+{
+  "name": "pharmacy-missing-items-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pharmacy Missing Items Management System - Production Desktop Application",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build --workspace=@pharmacy/shared",
+    "build:api": "npm run build --workspace=@pharmacy/api",
+    "build:desktop": "npm run build --workspace=@pharmacy/desktop",
+    "build": "npm run build:shared && npm run build:api && npm run build:desktop",
+    "dev:api": "npm run dev --workspace=@pharmacy/api",
+    "dev:desktop": "npm run dev --workspace=@pharmacy/desktop",
+    "desktop:dist": "npm run dist --workspace=@pharmacy/desktop",
+    "db:start": "powershell -ExecutionPolicy Bypass -File scripts/manage-db.ps1 -Action start",
+    "db:generate": "npm run db:generate --workspace=@pharmacy/api",
+    "db:push": "npm run db:push --workspace=@pharmacy/api",
+    "db:seed": "npm run db:seed --workspace=@pharmacy/api",
+    "test:flow": "npx tsx apps/api/test-flow.ts"
+  },
+  "devDependencies": {
+    "7zip-bin": "^5.2.0",
+    "typescript": "^5.4.5"
+  }
+}

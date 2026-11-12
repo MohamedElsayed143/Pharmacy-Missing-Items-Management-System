@@ -1,0 +1,210 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+  PURCHASING_MANAGER
+}
+
+enum Priority {
+  NORMAL
+  URGENT
+  EMERGENCY
+}
+
+enum ItemStatus {
+  NEW
+  REVIEWED
+  ADDED_TO_PURCHASE
+  ORDERED
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CUSTOMER_NOTIFIED
+  DELIVERED
+  CANCELLED
+}
+
+enum OverallStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum BatchStatus {
+  DRAFT
+  ORDERED
+  PARTIALLY_RECEIVED
+  COMPLETED
+  CANCELLED
+}
+
+model Employee {
+  id           String   @id @default(uuid())
+  fullName     String
+  username     String   @unique
+  passwordHash String
+  pinHash      String
+  role         Role     @default(EMPLOYEE)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  createdOrders            Order[]                 @relation("OrderCreatedBy")
+  createdBatches           PurchaseBatch[]         @relation("BatchCreatedBy")
+  authHistories            OrderItemStatusHistory[] @relation("HistoryAuthUser")
+  performerHistories       OrderItemStatusHistory[] @relation("HistoryPerformer")
+  authActivityLogs         ActivityLog[]           @relation("ActivityAuthUser")
+  performerActivityLogs    ActivityLog[]           @relation("ActivityPerformer")
+
+  @@index([username])
+}
+
+model Customer {
+  id           String   @id @default(uuid())
+  phone        String
+  customerCode String?
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([phone])
+}
+
+model Product {
+  id         String   @id @default(uuid())
+  name       String
+  strength   String?
+  dosageForm String
+  barcode    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  orderItems OrderItem[]
+
+  @@index([name])
+  @@unique([name, strength, dosageForm])
+}
+
+model Order {
+  id            String        @id @default(uuid())
+  requestNumber String        @unique
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  createdById   String
+  createdBy     Employee      @relation("OrderCreatedBy", fields: [createdById], references: [id])
+  overallStatus OverallStatus @default(OPEN)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  items OrderItem[]
+
+  @@index([requestNumber])
+  @@index([customerId])
+  @@index([overallStatus])
+}
+
+model OrderItem {
+  id                String     @id @default(uuid())
+  orderId           String
+  order             Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId         String
+  product           Product    @relation(fields: [productId], references: [id])
+  productNameCustom String
+  strength          String?
+  dosageForm        String
+  requestedQuantity Int
+  receivedQuantity  Int        @default(0)
+  priority          Priority   @default(NORMAL)
+  status            ItemStatus @default(NEW)
+  notes             String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  history            OrderItemStatusHistory[]
+  purchaseBatchItems PurchaseBatchItem[]
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([status])
+  @@index([priority])
+}
+
+model PurchaseBatch {
+  id           String      @id @default(uuid())
+  batchNumber  String      @unique
+  createdById  String
+  createdBy    Employee    @relation("BatchCreatedBy", fields: [createdById], references: [id])
+  status       BatchStatus @default(DRAFT)
+  supplierName String?
+  notes        String?
+  orderedAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  items PurchaseBatchItem[]
+
+  @@index([batchNumber])
+  @@index([status])
+}
+
+model PurchaseBatchItem {
+  id               String        @id @default(uuid())
+  batchId          String
+  batch            PurchaseBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  orderItemId      String
+  orderItem        OrderItem     @relation(fields: [orderItemId], references: [id])
+  orderedQuantity  Int
+  receivedQuantity Int           @default(0)
+  unitCost         Decimal?      @db.Decimal(10, 2)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([batchId])
+  @@index([orderItemId])
+}
+
+model OrderItemStatusHistory {
+  id                  String     @id @default(uuid())
+  orderItemId         String
+  orderItem           OrderItem  @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  fromStatus          ItemStatus
+  toStatus            ItemStatus
+  authenticatedUserId String
+  authenticatedUser   Employee   @relation("HistoryAuthUser", fields: [authenticatedUserId], references: [id])
+  performerEmployeeId String
+  performerEmployee   Employee   @relation("HistoryPerformer", fields: [performerEmployeeId], references: [id])
+  notes               String?
+  createdAt           DateTime   @default(now())
+
+  @@index([orderItemId])
+}
+
+model ActivityLog {
+  id                  String   @id @default(uuid())
+  action              String
+  entityType          String
+  entityId            String
+  previousState       Json?
+  newState            Json?
+  authenticatedUserId String
+  authenticatedUser   Employee @relation("ActivityAuthUser", fields: [authenticatedUserId], references: [id])
+  performerEmployeeId String
+  performerEmployee   Employee @relation("ActivityPerformer", fields: [performerEmployeeId], references: [id])
+  notes               String?
+  createdAt           DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+}
