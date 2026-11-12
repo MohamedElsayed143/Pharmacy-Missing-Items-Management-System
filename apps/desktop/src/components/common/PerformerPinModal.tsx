@@ -59,7 +59,12 @@ export const PerformerPinModal: React.FC<PerformerPinModalProps> = ({
     try {
       await onConfirm(selectedEmployeeId, pin.trim());
     } catch (err: any) {
-      setError(err?.response?.data?.error || err.message || 'فشل التحقق من الرمز السري');
+      const errorMsg =
+        err?.response?.data?.error ||
+        err?.message ||
+        'الرمز السري (PIN) للموظف غير صحيح. يرجى إعادة المحاولة.';
+      setError(errorMsg);
+      setPin(''); // Reset only PIN field for quick retry
     }
   };
 

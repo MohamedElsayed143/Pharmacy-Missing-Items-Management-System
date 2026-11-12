@@ -2,11 +2,6 @@ import React, { useState } from 'react';
 import { api } from '../api/client';
 import { PerformerPinModal } from '../components/common/PerformerPinModal';
 import {
-  ItemPriority,
-  DosageForm,
-  PRIORITY_LABELS,
-} from '@pharmacy/shared';
-import {
   Plus,
   Trash2,
   AlertCircle,
@@ -17,32 +12,27 @@ import {
   Pill,
   Sparkles,
   Info,
+  FileText,
 } from 'lucide-react';
 
 interface ItemFormState {
   productName: string;
-  strength: string;
-  dosageForm: string;
   requestedQuantity: number;
-  priority: ItemPriority;
   notes: string;
 }
 
 export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
-  // Customer info
+  // Customer info (Preserved exactly as required)
   const [customerPhone, setCustomerPhone] = useState<string>('');
   const [customerName, setCustomerName] = useState<string>('');
   const [customerCode, setCustomerCode] = useState<string>('');
   const [orderNotes, setOrderNotes] = useState<string>('');
 
-  // Items
+  // Products (Simplified to ONLY 3 fields: productName, requestedQuantity, notes)
   const [items, setItems] = useState<ItemFormState[]>([
     {
       productName: '',
-      strength: '',
-      dosageForm: DosageForm.TABLETS,
       requestedQuantity: 1,
-      priority: ItemPriority.NORMAL,
       notes: '',
     },
   ]);
@@ -80,10 +70,7 @@ export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCrea
       ...items,
       {
         productName: '',
-        strength: '',
-        dosageForm: DosageForm.TABLETS,
         requestedQuantity: 1,
-        priority: ItemPriority.NORMAL,
         notes: '',
       },
     ]);
@@ -116,11 +103,12 @@ export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCrea
 
     for (let i = 0; i < items.length; i++) {
       if (!items[i].productName.trim()) {
-        setErrorMessage(`يرجى إدخال اسم الدواء للصنف رقم (${i + 1})`);
+        setErrorMessage(`يرجى إدخال اسم الصنف الدوائي للصنف رقم (${i + 1})`);
         return;
       }
-      if (items[i].requestedQuantity < 1) {
-        setErrorMessage(`الكمية المطلوبة للصنف رقم (${i + 1}) يجب أن تكون 1 على الأقل`);
+      const qty = Number(items[i].requestedQuantity);
+      if (!Number.isInteger(qty) || qty <= 0) {
+        setErrorMessage(`الكمية المطلوبة للصنف رقم (${i + 1}) يجب أن تكون عدداً صحيحاً موجباً (1 على الأقل)`);
         return;
       }
     }
@@ -141,10 +129,7 @@ export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCrea
         performerPin,
         items: items.map((it) => ({
           productName: it.productName.trim(),
-          strength: it.strength.trim() || undefined,
-          dosageForm: it.dosageForm,
-          requestedQuantity: Number(it.requestedQuantity),
-          priority: it.priority,
+          requestedQuantity: Math.max(1, Math.floor(Number(it.requestedQuantity)) || 1),
           notes: it.notes.trim() || undefined,
         })),
       };
@@ -162,10 +147,7 @@ export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCrea
       setItems([
         {
           productName: '',
-          strength: '',
-          dosageForm: DosageForm.TABLETS,
           requestedQuantity: 1,
-          priority: ItemPriority.NORMAL,
           notes: '',
         },
       ]);
@@ -181,7 +163,7 @@ export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCrea
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn pb-12">
+    <div className="max-w-4xl mx-auto space-y-6 pb-16">
       {/* Header */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
@@ -190,7 +172,7 @@ export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCrea
             <span>تسجيل طلب نواقص جديد للصيدلية</span>
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            تسجيل سريع لأصناف الأدوية غير المتوفرة وربطها برقم هاتف العميل للتوريد والتنبيه الفوري.
+            تسجيل سريع ومبسط لأصناف الأدوية غير المتوفرة وربطها برقم هاتف العميل للتوريد والتنبيه الفوري.
           </p>
         </div>
       </div>
@@ -217,7 +199,7 @@ export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCrea
       )}
 
       <form onSubmit={handleInitiateSubmit} className="space-y-6">
-        {/* Customer Information Card */}
+        {/* Customer Information Card (Unchanged) */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="font-extrabold text-sm text-slate-800 pb-3 border-b border-slate-100 flex items-center gap-2">
             <User className="w-4 h-4 text-brand-600" />
@@ -272,19 +254,19 @@ export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCrea
           </div>
         </div>
 
-        {/* Missing Items List Card */}
+        {/* Missing Products Card (ONLY 3 FIELDS: Product Name, Quantity, Notes) */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div className="font-extrabold text-sm text-slate-800 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-brand-600" />
-              <span>الأصناف المطلوبة غير المتوفرة ({items.length})</span>
+              <span>الأصناف المطلوبة ({items.length})</span>
             </div>
             <button
               type="button"
               onClick={handleAddItem}
-              className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"
+              className="px-3.5 py-2 bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
               <span>إضافة صنف آخر لنفس الطلب</span>
             </button>
           </div>
@@ -293,116 +275,77 @@ export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCrea
             {items.map((item, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-xl bg-slate-50 border border-slate-200 relative space-y-3"
+                className="p-5 rounded-2xl bg-slate-50 border border-slate-200/90 relative space-y-3.5 transition-all"
               >
                 <div className="flex items-center justify-between text-xs font-bold text-slate-700">
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-brand-600 text-white flex items-center justify-center text-[10px] font-black">
                       {idx + 1}
                     </span>
-                    بيانات الصنف الدوائي:
+                    <span>بيانات الصنف المطلوب:</span>
                   </span>
                   {items.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemoveItem(idx)}
-                      className="text-rose-600 hover:text-rose-700 p-1 rounded hover:bg-rose-50"
+                      className="text-rose-600 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-100/60 transition-colors flex items-center gap-1 text-[11px] font-medium"
                       title="حذف هذا الصنف"
                     >
                       <Trash2 className="w-4 h-4" />
+                      <span>حذف الصنف</span>
                     </button>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  <div className="md:col-span-2">
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                      اسم الصنف التجاري / العلمي:
+                {/* Field 1: Product Name & Field 2: Quantity */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="md:col-span-3">
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+                      <Pill className="w-3.5 h-3.5 text-brand-600" />
+                      اسم الصنف التجاري / العلمي (إلزامي):
                     </label>
                     <input
                       type="text"
                       value={item.productName}
                       onChange={(e) => handleItemChange(idx, 'productName', e.target.value)}
-                      placeholder="مثال: Panadol Extra, Concor, Augmentin"
+                      placeholder="مثال: Panadol Extra, Concor 5mg, Augmentin 1g"
                       required
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                      التركيز / القوة (إن وجد):
-                    </label>
-                    <input
-                      type="text"
-                      value={item.strength}
-                      onChange={(e) => handleItemChange(idx, 'strength', e.target.value)}
-                      placeholder="مثال: 500mg, 1g, 0.1%"
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                      الشكل الصيدلاني:
-                    </label>
-                    <select
-                      value={item.dosageForm}
-                      onChange={(e) => handleItemChange(idx, 'dosageForm', e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    >
-                      {Object.values(DosageForm).map((form) => (
-                        <option key={form} value={form}>
-                          {form}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                      الكمية المطلوبة (علب/وحدات):
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      الكمية المطلوبة (إلزامي):
                     </label>
                     <input
                       type="number"
                       min={1}
+                      step={1}
                       value={item.requestedQuantity}
-                      onChange={(e) =>
-                        handleItemChange(idx, 'requestedQuantity', Math.max(1, parseInt(e.target.value) || 1))
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        handleItemChange(idx, 'requestedQuantity', isNaN(val) || val < 1 ? 1 : val);
+                      }}
+                      required
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-xs font-black text-center text-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm"
                     />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                      درجة الأهمية والأولوية:
-                    </label>
-                    <select
-                      value={item.priority}
-                      onChange={(e) => handleItemChange(idx, 'priority', e.target.value as ItemPriority)}
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    >
-                      <option value={ItemPriority.NORMAL}>{PRIORITY_LABELS.NORMAL}</option>
-                      <option value={ItemPriority.URGENT}>{PRIORITY_LABELS.URGENT}</option>
-                      <option value={ItemPriority.EMERGENCY}>{PRIORITY_LABELS.EMERGENCY}</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                      ملاحظات خاصة بالصنف:
-                    </label>
-                    <input
-                      type="text"
-                      value={item.notes}
-                      onChange={(e) => handleItemChange(idx, 'notes', e.target.value)}
-                      placeholder="بديل مقبول، تشغيلة معينة، ..."
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    />
-                  </div>
+                {/* Field 3: Notes (Multiline Text Input) */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+                    <FileText className="w-3.5 h-3.5 text-brand-600" />
+                    ملاحظات خاصة بالصنف (اختياري):
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={item.notes}
+                    onChange={(e) => handleItemChange(idx, 'notes', e.target.value)}
+                    placeholder="مثال: العميل يقبل بديلاً بنفس المادة الفعالة، عبوة أصلية فقط، مطلوب بشكل عاجل، إلخ..."
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none shadow-sm"
+                  ></textarea>
                 </div>
               </div>
             ))}
@@ -410,7 +353,7 @@ export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCrea
         </div>
 
         {/* General Order Notes */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
           <label className="block text-xs font-bold text-slate-700 mb-1.5">
             ملاحظات عامة على الطلب (اختياري):
           </label>
@@ -424,7 +367,7 @@ export const CreateRequestPage: React.FC<{ onCreated?: () => void }> = ({ onCrea
         </div>
 
         {/* Form Submission Button */}
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 pt-2">
           <button
             type="submit"
             className="px-8 py-3.5 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-black text-sm rounded-xl shadow-lg shadow-brand-600/30 transition-all flex items-center gap-2"

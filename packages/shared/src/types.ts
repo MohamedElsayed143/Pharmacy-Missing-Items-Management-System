@@ -109,7 +109,7 @@ export interface OrderDto {
 export interface CreateOrderItemInput {
   productName: string;
   strength?: string;
-  dosageForm: string;
+  dosageForm?: string;
   requestedQuantity: number;
   priority?: ItemPriority;
   notes?: string;
@@ -149,6 +149,7 @@ export interface GroupedProductRequestDto {
     quantity: number;
     priority: ItemPriority;
     status: OrderItemStatus;
+    notes?: string | null;
     createdAt: string;
   }[];
 }

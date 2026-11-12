@@ -20,15 +20,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor to handle unauthorized 401s
+// Response interceptor to handle session expiration cleanly
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Only clear token and redirect if the workstation session itself is expired or invalid.
+    // Do NOT clear token on PIN failures (which return 403 or code: INVALID_PIN) or other errors.
     if (error.response && error.response.status === 401) {
-      // Clear token if invalid/expired and redirect to login if not already there
-      if (!window.location.hash.includes('login')) {
-        localStorage.removeItem('pharmacy_auth_token');
-        localStorage.removeItem('pharmacy_auth_user');
+      const code = error.response.data?.code;
+      if (code === 'SESSION_EXPIRED' || (!code && !error.response.data?.error?.includes('PIN'))) {
+        if (!window.location.hash.includes('login')) {
+          localStorage.removeItem('pharmacy_auth_token');
+          localStorage.removeItem('pharmacy_auth_user');
+          window.location.hash = '#/login';
+        }
       }
     }
     return Promise.reject(error);

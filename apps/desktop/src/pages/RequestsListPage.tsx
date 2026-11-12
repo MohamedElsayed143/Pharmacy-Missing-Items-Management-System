@@ -276,12 +276,17 @@ export const RequestsListPage: React.FC = () => {
                       {item.order?.requestNumber}
                     </td>
 
-                    {/* Drug Name & Strength */}
+                    {/* Drug Name & Strength & Notes */}
                     <td className="px-4 py-3.5">
                       <div className="font-bold text-slate-900">{item.productNameCustom}</div>
                       {item.strength && (
                         <div className="text-[11px] font-semibold text-slate-500">
                           {item.strength}
+                        </div>
+                      )}
+                      {item.notes && (
+                        <div className="mt-1 text-[11px] text-amber-900 bg-amber-50/90 border border-amber-200/80 rounded px-1.5 py-0.5 inline-block font-medium">
+                          📝 {item.notes}
                         </div>
                       )}
                     </td>
@@ -410,7 +415,32 @@ export const RequestsListPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-6 max-h-[420px] overflow-y-auto space-y-4">
+            <div className="p-6 max-h-[440px] overflow-y-auto space-y-4">
+              {/* Item Info Summary Card with Notes */}
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-slate-500">رقم الطلب: </span>
+                    <span className="font-bold font-mono text-brand-700">{selectedItemForHistory.order?.requestNumber}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500">الكمية المطلوبة: </span>
+                    <span className="font-black text-slate-800">{selectedItemForHistory.requestedQuantity} علبة</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-1.5 pt-1 border-t border-slate-200/60">
+                  <span className="font-bold text-slate-600 flex-shrink-0">ملاحظات الصنف:</span>
+                  {selectedItemForHistory.notes ? (
+                    <span className="font-medium text-amber-900 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded flex-1">
+                      {selectedItemForHistory.notes}
+                    </span>
+                  ) : (
+                    <span className="text-slate-400 italic">لا توجد ملاحظات مسجلة</span>
+                  )}
+                </div>
+              </div>
+
               {isLoadingHistory ? (
                 <div className="py-8 text-center text-xs text-slate-400">جاري تحميل السجل...</div>
               ) : historyLogs.length === 0 ? (

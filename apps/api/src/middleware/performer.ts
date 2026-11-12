@@ -30,7 +30,7 @@ export async function verifyPerformerAttribution(req: Request, res: Response, ne
 
   const employee = await prisma.employee.findUnique({
     where: { id: performerEmployeeId },
-    select: { id: true, fullName: true, role: true, isActive: true, pinHash: true },
+    select: { id: true, fullName: true, role: true, isActive: true, pinHash: true, passwordHash: true },
   });
 
   if (!employee) {
@@ -41,9 +41,16 @@ export async function verifyPerformerAttribution(req: Request, res: Response, ne
     return res.status(403).json({ error: 'حساب الموظف المنفذ المحدد معطل حالياً' });
   }
 
-  const isPinValid = await bcrypt.compare(performerPin, employee.pinHash);
+  const cleanPin = performerPin.trim();
+  const isPinValid =
+    (await bcrypt.compare(cleanPin, employee.pinHash)) ||
+    (await bcrypt.compare(cleanPin, employee.passwordHash));
+
   if (!isPinValid) {
-    return res.status(401).json({ error: 'الرمز السري (PIN) للموظف غير صحيح' });
+    return res.status(403).json({
+      code: 'INVALID_PIN',
+      error: 'الرمز السري (PIN) للموظف غير صحيح. يرجى التأكد وإعادة المحاولة.',
+    });
   }
 
   req.performer = {

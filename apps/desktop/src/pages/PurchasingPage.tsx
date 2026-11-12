@@ -359,44 +359,66 @@ export const PurchasingPage: React.FC = () => {
 
                     {/* Customer Breakdown Drawer */}
                     {isExpanded && (
-                      <div className="bg-slate-50 p-4 border-t border-slate-200 space-y-2">
-                        <div className="text-[11px] font-bold text-slate-500 uppercase pb-1">
-                          قائمة طلبات العملاء المندرجة تحت هذا الصنف:
+                      <div className="bg-slate-50/90 p-4 border-t border-slate-200 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                            <span>قائمة طلبات العملاء المنتظرين لهذا الصنف ({group.orderItems.length}):</span>
+                          </span>
+                          <span className="text-[11px] text-slate-500">
+                            انقر على بطاقة أي عميل لتحديده أو استبعاده من أمر الشراء
+                          </span>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {group.orderItems.map((item) => {
                             const isChecked = selectedItemIds.has(item.id);
                             return (
                               <div
                                 key={item.id}
                                 onClick={() => toggleSelectItem(item.id)}
-                                className={`p-3 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between ${
+                                className={`p-3.5 rounded-xl border text-xs cursor-pointer transition-all space-y-2 ${
                                   isChecked
-                                    ? 'bg-brand-50/80 border-brand-300 text-brand-900'
-                                    : 'bg-white border-slate-200 text-slate-800 hover:border-slate-300'
+                                    ? 'bg-brand-50/90 border-brand-400 shadow-sm text-brand-950'
+                                    : 'bg-white border-slate-200 text-slate-800 hover:border-slate-300 shadow-xs'
                                 }`}
                               >
-                                <div className="flex items-center gap-2.5">
-                                  <input
-                                    type="checkbox"
-                                    checked={isChecked}
-                                    onChange={() => {}}
-                                    className="w-3.5 h-3.5 rounded text-brand-600"
-                                  />
-                                  <div>
-                                    <div className="font-bold flex items-center gap-1.5">
-                                      <span>{item.requestNumber}</span>
-                                      <span className="text-slate-400 font-normal">|</span>
-                                      <span className="font-mono text-slate-600">{item.customerPhone}</span>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2.5">
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={() => {}}
+                                      className="w-4 h-4 rounded text-brand-600 cursor-pointer"
+                                    />
+                                    <div>
+                                      <div className="font-bold flex items-center gap-1.5">
+                                        <span className="font-mono text-brand-700 font-extrabold">{item.requestNumber}</span>
+                                        <span className="text-slate-300">|</span>
+                                        <span className="font-mono text-slate-700">{item.customerPhone}</span>
+                                      </div>
+                                      {item.customerName && (
+                                        <div className="text-[11px] text-slate-600 font-medium">
+                                          {item.customerName}
+                                        </div>
+                                      )}
                                     </div>
-                                    {item.customerName && (
-                                      <div className="text-[11px] text-slate-500">{item.customerName}</div>
-                                    )}
+                                  </div>
+
+                                  <div className="text-left font-black text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                    {item.quantity} علبة
                                   </div>
                                 </div>
 
-                                <div className="text-left font-bold text-slate-900">
-                                  {item.quantity} علبة
+                                {/* Customer Specific Item Notes */}
+                                <div className="pt-2 border-t border-slate-100 flex items-start gap-1.5 text-[11px]">
+                                  <span className="font-bold text-slate-500 flex-shrink-0">ملاحظات العميل:</span>
+                                  {item.notes ? (
+                                    <span className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md flex-1">
+                                      {item.notes}
+                                    </span>
+                                  ) : (
+                                    <span className="text-slate-400 italic">لا توجد ملاحظات إضافية</span>
+                                  )}
                                 </div>
                               </div>
                             );

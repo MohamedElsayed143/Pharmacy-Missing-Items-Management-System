@@ -25,7 +25,7 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
   if (!token) {
-    return res.status(401).json({ error: 'غير مصرح: يرجى تسجيل الدخول' });
+    return res.status(401).json({ code: 'SESSION_EXPIRED', error: 'غير مصرح: يرجى تسجيل الدخول' });
   }
 
   try {
@@ -36,7 +36,7 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
     });
 
     if (!employee || !employee.isActive) {
-      return res.status(401).json({ error: 'حساب المستخدم غير نشط أو غير موجود' });
+      return res.status(401).json({ code: 'SESSION_EXPIRED', error: 'حساب المستخدم غير نشط أو غير موجود' });
     }
 
     req.user = {
@@ -48,14 +48,14 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
 
     return next();
   } catch (err) {
-    return res.status(401).json({ error: 'رمز الجلسة غير صالح أو منتهي الصلاحية' });
+    return res.status(401).json({ code: 'SESSION_EXPIRED', error: 'رمز الجلسة غير صالح أو منتهي الصلاحية' });
   }
 }
 
 export function requireRole(...roles: Role[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ error: 'غير مصرح' });
+      return res.status(401).json({ code: 'SESSION_EXPIRED', error: 'غير مصرح' });
     }
 
     if (roles.length > 0 && !roles.includes(req.user.role)) {

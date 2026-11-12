@@ -277,9 +277,14 @@ export const ReceivingPage: React.FC = () => {
                           {item.order?.requestNumber}
                         </td>
                         <td className="px-4 py-3.5 font-bold text-slate-900">
-                          {item.productNameCustom}{' '}
+                          <div>{item.productNameCustom}</div>
                           {item.strength && (
-                            <span className="text-slate-500 font-normal">({item.strength})</span>
+                            <span className="text-slate-500 font-normal text-[11px]">({item.strength})</span>
+                          )}
+                          {item.notes && (
+                            <div className="mt-1 text-[11px] text-amber-900 bg-amber-50 border border-amber-200/80 rounded px-1.5 py-0.5 inline-block font-medium">
+                              📝 {item.notes}
+                            </div>
                           )}
                         </td>
                         <td className="px-4 py-3.5 font-bold">{item.requestedQuantity}</td>
@@ -363,9 +368,14 @@ export const ReceivingPage: React.FC = () => {
                         {item.order?.requestNumber}
                       </td>
                       <td className="px-4 py-3.5 font-bold text-slate-900">
-                        {item.productNameCustom}{' '}
+                        <div>{item.productNameCustom}</div>
                         {item.strength && (
-                          <span className="text-slate-500 font-normal">({item.strength})</span>
+                          <span className="text-slate-500 font-normal text-[11px]">({item.strength})</span>
+                        )}
+                        {item.notes && (
+                          <div className="mt-1 text-[11px] text-amber-900 bg-amber-50 border border-amber-200/80 rounded px-1.5 py-0.5 inline-block font-medium">
+                            📝 {item.notes}
+                          </div>
                         )}
                       </td>
                       <td className="px-4 py-3.5 font-extrabold text-emerald-700">
@@ -447,6 +457,11 @@ export const ReceivingPage: React.FC = () => {
                   </strong>{' '}
                   وحدة
                 </div>
+                {selectedItemForReceive.notes && (
+                  <div className="pt-1 border-t border-slate-200 text-amber-900 bg-amber-50 p-1.5 rounded">
+                    <strong>ملاحظات العميل: </strong> {selectedItemForReceive.notes}
+                  </div>
+                )}
               </div>
 
               <div>

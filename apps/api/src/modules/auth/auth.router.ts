@@ -108,14 +108,18 @@ router.post('/verify-pin', authenticateToken, async (req: Request, res: Response
 
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
-    select: { pinHash: true, isActive: true },
+    select: { pinHash: true, passwordHash: true, isActive: true },
   });
 
   if (!employee || !employee.isActive) {
     return res.status(404).json({ valid: false, error: 'الموظف غير نشط أو غير موجود' });
   }
 
-  const isValid = await bcrypt.compare(pin, employee.pinHash);
+  const cleanPin = String(pin).trim();
+  const isValid =
+    (await bcrypt.compare(cleanPin, employee.pinHash)) ||
+    (await bcrypt.compare(cleanPin, employee.passwordHash));
+
   return res.json({ valid: isValid });
 });
 

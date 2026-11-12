@@ -7,6 +7,14 @@
     border-color: #e2e8f0;
   }
   
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
   body {
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }

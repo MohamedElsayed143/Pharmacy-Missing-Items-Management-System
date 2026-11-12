@@ -43,17 +43,17 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100 text-slate-900 select-none overflow-hidden font-sans">
+    <div className="h-screen w-screen flex flex-col bg-slate-100 text-slate-900 overflow-hidden font-sans">
       {/* Top Navbar */}
       <Navbar />
 
       {/* Main Workspace: Sidebar + Dynamic Page Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex min-h-0 min-w-0 overflow-hidden">
         {/* Right Sidebar (in RTL layout) */}
         <Sidebar activeTab={activeTab} onSelectTab={(tab) => setActiveTab(tab)} />
 
-        {/* Dynamic Content Area */}
-        <main className="flex-1 overflow-y-auto p-6">
+        {/* Dynamic Content Area - Primary Scroll Container for Mouse Wheel & Touchpad */}
+        <main tabIndex={-1} className="flex-1 h-full min-h-0 min-w-0 overflow-y-auto overflow-x-hidden p-6 focus:outline-none">
           {activeTab === 'dashboard' && <DashboardPage onNavigate={(tab) => setActiveTab(tab)} />}
           {activeTab === 'create-request' && (
             <CreateRequestPage onCreated={() => setActiveTab('requests')} />

@@ -20,7 +20,7 @@ router.use(authenticateToken);
 const createOrderItemSchema = z.object({
   productName: z.string().min(1, 'اسم الدواء مطلوب'),
   strength: z.string().optional().nullable(),
-  dosageForm: z.string().min(1, 'الشكل الصيدلاني مطلوب'),
+  dosageForm: z.string().optional().default('عام (General)'),
   requestedQuantity: z.number().int().positive('الكمية يجب أن تكون عدداً موجباً'),
   priority: z.nativeEnum(ItemPriority).optional().default(ItemPriority.NORMAL),
   notes: z.string().optional().nullable(),
@@ -137,14 +137,12 @@ router.post('/', verifyPerformerAttribution, async (req: Request, res: Response)
       for (const item of items) {
         const trimmedName = item.productName.trim();
         const trimmedStrength = item.strength?.trim() || null;
-        const dosageForm = item.dosageForm.trim();
+        const dosageForm = (item.dosageForm && item.dosageForm.trim()) || 'عام (General)';
 
         // Find or create product
         let product = await tx.product.findFirst({
           where: {
             name: { equals: trimmedName, mode: 'insensitive' },
-            strength: trimmedStrength,
-            dosageForm: dosageForm,
           },
         });
 
@@ -161,13 +159,13 @@ router.post('/', verifyPerformerAttribution, async (req: Request, res: Response)
         itemsData.push({
           productId: product.id,
           productNameCustom: trimmedName,
-          strength: trimmedStrength,
-          dosageForm: dosageForm,
+          strength: product.strength || trimmedStrength,
+          dosageForm: product.dosageForm || dosageForm,
           requestedQuantity: item.requestedQuantity,
           receivedQuantity: 0,
           priority: item.priority as unknown as Priority,
           status: ItemStatus.NEW,
-          notes: item.notes || null,
+          notes: item.notes?.trim() || null,
         });
       }
 
