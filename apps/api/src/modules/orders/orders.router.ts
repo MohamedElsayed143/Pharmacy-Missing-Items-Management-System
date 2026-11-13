@@ -366,6 +366,39 @@ router.get('/items', async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/orders/items/:id (Single order item details)
+router.get('/items/:id', async (req: Request, res: Response) => {
+  try {
+    const item = await prisma.orderItem.findUnique({
+      where: { id: req.params.id },
+      include: {
+        product: true,
+        order: {
+          include: {
+            customer: true,
+            createdBy: { select: { fullName: true, username: true } },
+          },
+        },
+        history: {
+          orderBy: { createdAt: 'desc' },
+          include: {
+            authenticatedUser: { select: { fullName: true, username: true } },
+            performerEmployee: { select: { fullName: true, role: true } },
+          },
+        },
+      },
+    });
+
+    if (!item) {
+      return res.status(404).json({ error: 'صنف الطلب غير موجود' });
+    }
+
+    return res.json(item);
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /api/orders/:id (Single order details)
 router.get('/:id', async (req: Request, res: Response) => {
   try {
